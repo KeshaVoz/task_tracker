@@ -7,7 +7,7 @@ from app.dependencies import get_current_user
 from app.utils.auth import create_auth_response, create_refresh_response
 
 
-router = APIRouter(prefix="", tags=["auth"]) 
+router = APIRouter(prefix="/api/auth", tags=["auth"]) 
 
 
 @router.post("/user")

@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert, update
+from sqlalchemy import delete, select, insert, update
 from typing import Any, Dict, Optional, List
 from app.database import async_session_maker
 
@@ -37,6 +37,14 @@ class BaseDAO:
     async def update(cls, filter_by: Dict[str, Any], update_data: Dict[str, Any]) -> bool:
         async with async_session_maker() as session:
             stmt = update(cls.model).filter_by(**filter_by).values(**update_data)
+            result = await session.execute(stmt)
+            await session.commit()
+            return result.rowcount > 0
+        
+    @classmethod
+    async def delete(cls, **filter_by: Any) -> bool:
+        async with async_session_maker() as session:
+            stmt = delete(cls.model).filter_by(**filter_by)
             result = await session.execute(stmt)
             await session.commit()
             return result.rowcount > 0

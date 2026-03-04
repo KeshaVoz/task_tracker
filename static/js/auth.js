@@ -1,4 +1,3 @@
-console.log('auth.js loaded, window.checkAuth exists:', window.checkAuth);
 function getAccessToken() {
     const token = localStorage.getItem('access_token');
     console.log('getAccessToken: token =', token)
@@ -13,7 +12,7 @@ function setAccessToken(token) {
 
 function login(email, password) {    
     $.ajax({
-        url: '/session',
+        url: '/api/auth/session',
         method: 'POST',
         data: { email, password },
         xhrFields: { withCredentials: true },
@@ -25,12 +24,12 @@ function login(email, password) {
                     const token = getAccessToken();
                     if (token) {
                         $.ajax({
-                            url: '/user',
+                            url: '/api/auth/user',
                             method: 'GET',
                             headers: { 'Authorization': `Bearer ${token}` },
                             xhrFields: { withCredentials: true },
                             success: function(userResponse) {
-                                window.location.href = '/main';
+                                window.location.href = '/tasks';
                             },
                             error: function(xhr) {
                                 window.location.href = '/login';
@@ -51,7 +50,7 @@ function login(email, password) {
 
 function register(email, password) {
     $.ajax({
-        url: '/user',
+        url: '/api/auth/user',
         method: 'POST',
         data: { email, password },
         xhrFields: { withCredentials: true },
@@ -61,7 +60,7 @@ function register(email, password) {
                 setTimeout(() => {                    
                     const token = getAccessToken();
                     if (token) {
-                        window.location.href = '/main';
+                        window.location.href = '/tasks';
                     } else {
                         alert('Token disappeared!');
                     }
@@ -77,7 +76,7 @@ function register(email, password) {
 
 function logout() {
     $.ajax({
-        url: '/session',
+        url: '/api/auth/session',
         method: 'DELETE',
         xhrFields: { withCredentials: true },
         complete: function () {
@@ -101,7 +100,7 @@ async function getCurrentUser() {
         console.log('2. getCurrentUser: sending /user request with token:', token.slice(0, 30) + '...');
         try {
             const response = await $.ajax({
-                url: '/user',
+                url: '/api/auth/user',
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` },
                 xhrFields: { withCredentials: true }
@@ -122,7 +121,7 @@ async function tryRefreshToken() {
     console.log('10. tryRefreshToken: document.cookie =', document.cookie);
     try {
         const response = await $.ajax({
-            url: '/session/refresh',
+            url: '/api/auth/session/refresh',
             method: 'POST',
             xhrFields: { withCredentials: true }
         });

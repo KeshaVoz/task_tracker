@@ -231,8 +231,6 @@ body {
 }
 
 .task.completed { 
-    opacity: 0.7; 
-    text-decoration: line-through; 
     border-left-color: #28a745;
 }
 
