@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #loading { color: #666; }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading...</div>
+    <div id="mainContent" style="display: none;">
+        <h1>Welcome, <span id="currentUser"></span>!</h1>
+        <button id="logoutBtn">Logout</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        setTimeout(() => {
+        }, 2000);
+        $(document).ready(async function() {   
+            console.log('main: window.checkAuth type =', typeof window.checkAuth);
+            console.log('main: window.checkAuth function body =', window.checkAuth.toString());         
+            try {
+                const user = await window.checkAuth();  
+                console.log('6. main: user after checkAuth =', user);
+                console.log('7. main: user.email =', user.email);
+                $('#currentUser').text(user.email);
+                $('#loading').hide();
+                $('#mainContent').show();
+            } catch (e) {
+                console.log('8. main: checkAuth failed, error =', e);
+                window.location.href = '/login';
+            }
+            
+            $('#logoutBtn').click(window.logout);
+        });
+    </script>
+</body>
+</html>
