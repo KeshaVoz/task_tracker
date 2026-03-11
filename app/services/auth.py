@@ -3,6 +3,7 @@ from app.models.users import User
 from app.auth.base import hash_password, verify_password, create_access_token, create_refresh_token
 from app.auth.refresh_store import store_refresh_token_in_redis
 from app.schemas.users import SUserCreate, SUserOut
+from app.tasks.email import send_welcome_email
 
 class AuthService:
     @staticmethod
@@ -13,6 +14,8 @@ class AuthService:
         
         hashed = hash_password(password)
         user_data = SUserCreate(email=email, hashed_password=hashed).model_dump()
+        send_welcome_email.delay(email)
+        print('after welcome task')
         return await UserDAO.add(**user_data)
 
     @staticmethod

@@ -27,13 +27,27 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="/js/auth.js"></script> 
     <script>
+    $('#loginForm').submit(function(e) {
+        e.preventDefault();
+        const email = $('#loginEmail').val();
+        const password = $('#loginPassword').val();
+        login(email, password);  
+    });
+
+    // 🔥 АВТОПРОВЕРКА + РЕДИРЕКТ ПРИ ТОКЕНЕ
+    $(document).ready(async function() {
+        console.log('🔍 Login page: checking existing auth...');
         
-        $('#loginForm').submit(function(e) {
-            e.preventDefault();
-            const email = $('#loginEmail').val();
-            const password = $('#loginPassword').val();
-            login(email, password);  
-        });
-    </script>
+        try {
+            // Проверяем токен/refresh → получаем user
+            const user = await window.checkAuth();
+            console.log('✅ Token valid/updated, redirecting to tasks:', user.email);
+            window.location.href = '/tasks';  // РЕДИРЕКТ!
+        } catch (error) {
+            console.log('❌ No valid auth, show login form');
+            // Форма уже видна — ничего не делаем
+        }
+    });
+</script>
 </body>
 </html>

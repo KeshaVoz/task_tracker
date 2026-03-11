@@ -1,5 +1,4 @@
 services:
-  
   db:
     image: postgres:15
     env_file:
@@ -13,8 +12,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -27,9 +28,132 @@ services:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    env_file:
+      - .env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  migrate:
+    image: python:3.12-slim
+    command: >
+      bash -c "
+        apt-get update -qq && 
+        apt-get install -y --no-install-recommends gcc g++ postgresql-client &&
+        pip install --no-cache-dir -r requirements.txt &&
+        until pg_isready -h $${DB_HOST} -p $${DB_PORT} -U $${DB_USER}; do
+          echo 'Waiting for PostgreSQL...';
+          sleep 2;
+        done &&
+        alembic upgrade head || echo 'Migrations completed or skipped'
+      "
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    container_name: api
+    image: python:3.12-slim
+    command: >
+      bash -c "
+        pip install --no-cache-dir -r requirements.txt &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 
+      "
+    env_file:
+      - .env
+    ports:
+      - "8080:8000"
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-worker:
+    image: python:3.12-slim
+    command: >
+      bash -c "
+        pip install --no-cache-dir -r requirements.txt &&
+        celery -A app.celery_client worker -l info -P solo -Q celery
+      "
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  celery-beat:
+    image: python:3.12-slim
+    command: >
+      bash -c "
+        pip install --no-cache-dir -r requirements.txt &&
+        celery -A app.celery_client beat -l info
+      "
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  task-tracker-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: task-tracker-frontend:latest
+    container_name: task-tracker-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
 
 volumes:
   postgres_data:
   redis_data:
-
-

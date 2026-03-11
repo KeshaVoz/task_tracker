@@ -1,3 +1,4 @@
+
 $(document).ready(async function() {
     console.log('Tasks page loaded');
     
@@ -28,6 +29,8 @@ function initTasks() {
 
 
 async function apiRequest(options) {
+    console.log(' apiRequest URL:', options.url);           
+    console.log(' apiRequest METHOD:', options.method);
     const token = localStorage.getItem('access_token');
     if (!token) {
         window.location.href = '/login';
@@ -40,8 +43,7 @@ async function apiRequest(options) {
             method: options.method || 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                ...(options.headers || {})  
             },
             data: options.data,
             xhrFields: { withCredentials: true },
@@ -55,6 +57,7 @@ async function apiRequest(options) {
                     statusText: xhr.statusText,
                     responseText: xhr.responseText?.substring(0, 200)
                 });
+                console.log(`❌ ${options.method} ${options.url} FAILED [${xhr.status}]:`, xhr.responseText);
                 
                 if (xhr.status === 401) {
                     localStorage.removeItem('access_token');
@@ -97,18 +100,18 @@ function renderTasks(tasks) {
 
     let html = '';
 
-    html += `<h3>⏳ Pending Tasks (${pendingTasks.length})</h3>`;
+    html += `<h3>Pending Tasks (${pendingTasks.length})</h3>`;
     if (pendingTasks.length > 0) {
         html += pendingTasks.map(task => taskHtml(task, true)).join('');
     } else {
-        html += '<div class="task empty-task">No pending tasks 🎉</div>';
+        html += '<div class="task empty-task">No pending tasks </div>';
     }
 
 
     html += '<hr style="margin: 40px 0;">';
 
 
-    html += `<h3>✅ Completed Tasks (${completedTasks.length})</h3>`;
+    html += `<h3>Completed Tasks (${completedTasks.length})</h3>`;
     if (completedTasks.length > 0) {
         html += completedTasks.map(task => taskHtml(task, false)).join('');
     } else {
@@ -156,14 +159,14 @@ async function addTask() {
     
     if (!title) return;
 
+    console.log('➕ addTask отправляем:', { title, description });  // ← ДОБАВЬТЕ
+    console.log('➕ addTask URL будет:', '/api/tasks');
     try {
         await apiRequest({
             url: '/api/tasks',
             method: 'POST',
-            data: JSON.stringify({ 
-                title, 
-                description: description || null
-            })
+            data: JSON.stringify({ title, description }),  
+            headers: { 'Content-Type': 'application/json' }
         });
         
         $('#newTaskTitle, #newTaskDescription').val('');
@@ -210,10 +213,11 @@ $(document).on('click', '.task-save', async function(e) {
         await apiRequest({
             url: `/api/tasks/${taskId}`,
             method: 'PATCH',
-            data: JSON.stringify({ 
+            data: JSON.stringify({                    
                 title: newTitle,
-                description: newDescription || null
-            })
+                description: newDescription || ''       
+            }),
+            headers: { 'Content-Type': 'application/json' }
         });
         loadTasks();
     } catch (error) {
@@ -231,7 +235,7 @@ $(document).on('click', '.task-toggle', async function(e) {
         await apiRequest({
             url: `/api/tasks/${taskId}/toggle`,
             method: 'PATCH'
-            // Без body - сервер сам переключит статус
+  
         });
         loadTasks();
     } catch (error) {

@@ -323,6 +323,45 @@ body {
     font-size: 1.1em;
 }
 
+.task-actions button {
+    font-family: -apple-system, BlinkMacSystemFont, 
+                 'Segoe UI Emoji', 'Apple Color Emoji', 
+                 'Noto Color Emoji', 'Android Emoji', 
+                 sans-serif !important;
+    font-feature-settings: "cv11" 1; /* Emoji presentation */
+    font-variation-settings: "wdth" 100;
+    line-height: 1;
+}
+
+/* Конкретно для кнопок */
+.task-edit, .task-save, .task-toggle, .task-delete {
+    font-size: 20px !important;
+    font-weight: normal !important;
+}
+
+.task-edit-input, .task-edit-textarea {
+    padding: 8px 12px;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    font-size: 1.1em;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+.task-edit-textarea {
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+}
+.task-editing {
+    background: #fff3cd !important;
+    border-left-color: #ffc107 !important;
+}
+ 
+.task.completed span, .task.completed div {
+    text-decoration: none !important;
+}
 
 @media (max-width: 768px) {
     .auth-card { padding: 40px 25px; margin: 20px; }
