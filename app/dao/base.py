@@ -51,36 +51,27 @@ class BaseDAO:
 
     @classmethod
     def add_sync(cls, **data: Any) -> Any:  
-        session = sync_session_maker()
-        try:
+        with sync_session_maker() as session:
             stmt = insert(cls.model).values(**data).returning(cls.model)
             result = session.execute(stmt)
             session.commit()
             obj_row = result.fetchone()
             return obj_row[0] if obj_row else None
-        finally:
-            session.close()
 
     @classmethod
     def find_one_or_none_sync(cls, **filter_by: Any) -> Optional[Any]:  
-        session = sync_session_maker()
-        try:
+        with sync_session_maker() as session:
             stmt = select(cls.model)
             if filter_by:
                 stmt = stmt.filter_by(**filter_by)
             result = session.execute(stmt)
             return result.unique().scalar_one_or_none()
-        finally:
-            session.close()
 
     @classmethod
     def find_all_sync(cls, **filter_by: Any) -> List[Any]:
-        session = sync_session_maker()
-        try:
+        with sync_session_maker() as session:
             stmt = select(cls.model)
             if filter_by:
                 stmt = stmt.filter_by(**filter_by)
             result = session.execute(stmt)
             return list(result.unique().scalars().all())
-        finally:
-            session.close()

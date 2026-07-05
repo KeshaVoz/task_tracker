@@ -6,3 +6,4 @@ class STokenPayload(BaseModel):
     type: str         
     exp: int
 
+

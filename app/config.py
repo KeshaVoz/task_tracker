@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,16 +22,25 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_TTL_MIN: int
     REFRESH_TOKEN_TTL_DAYS: int
     
-    MAILJET_HOST: str 
-    MAILJET_PORT: int 
-    MAILJET_USERNAME: str  
-    MAILJET_PASSWORD: str  
-    MAILJET_FROM: str
+    SMTP_HOST: str 
+    SMTP_PORT: int 
+    SMTP_USERNAME: Optional[str] = ""
+    SMTP_PASSWORD: Optional[str] = ""  
+    SMTP_FROM: str
     
     RABBITMQ_DEFAULT_USER: str
     RABBITMQ_DEFAULT_PASS: str
+    CELERY_BROKER_URL: str
+
+    KAFKA_URL: str
+
+    ALLOWED_ORIGINS: List[str]
     
-    model_config = SettingsConfigDict(env_file='.env')
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_ignore_missing=True,
+        extra="ignore"
+    )
 
 settings = Settings()
 

@@ -1,0 +1,11 @@
+faststream[kafka,cli]==0.5.33
+gigachat==0.2.1
+pydantic==2.12.5
+pydantic-settings==2.13.1
+alembic==1.18.4
+SQLAlchemy==2.0.47
+asyncpg==0.31.0
+psycopg2-binary==2.9.11
+pytest==9.1.1
+pytest-asyncio==1.4.0
+aiosqlite==0.22.1

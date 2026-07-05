@@ -1,34 +1,45 @@
+import logging
+from fastapi import status
 from app.dao.users import UserDAO
-from app.models.users import User
-from app.auth.base import hash_password, verify_password, create_access_token, create_refresh_token
-from app.auth.refresh_store import store_refresh_token_in_redis
+from app.auth.base import hash_password, verify_password
 from app.schemas.users import SUserCreate, SUserOut
-from app.tasks.email import send_welcome_email
+from app.exceptions.base import AppServiceException
+
+
+logger = logging.getLogger(__name__)
+
 
 class AuthService:
     @staticmethod
-    async def register(email: str, password: str) -> User:
+    async def register(email: str, password: str) -> SUserOut:
         existing = await UserDAO.find_one_or_none(email=email)
         if existing:
-            raise ValueError('This email is already taken')
+            logger.warning("Registration failed: Email %s is already taken", email)
+            raise AppServiceException(
+                status_code=status.HTTP_409_CONFLICT,
+                message="This email is already taken"
+            )
         
         hashed = hash_password(password)
         user_data = SUserCreate(email=email, hashed_password=hashed).model_dump()
+        
+        new_user = await UserDAO.add(**user_data)
+
+        from app.tasks.email import send_welcome_email
         send_welcome_email.delay(email)
-        print('after welcome task')
-        return await UserDAO.add(**user_data)
+        logger.info("Welcome email tasked triggered for %s after DB persist", email)
+        
+        return SUserOut.model_validate(new_user)
 
     @staticmethod
-    async def authenticate(email: str, password: str) -> User:
+    async def authenticate(email: str, password: str) -> SUserOut:
         user = await UserDAO.find_one_or_none(email=email)
         if not user or not verify_password(password, user.hashed_password):
-            raise ValueError('Invalid credentials')
+            logger.warning("Authentication failed for email: %s", email)
+            raise AppServiceException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                message="Invalid credentials"
+            )
+            
         return SUserOut.model_validate(user)
 
-    @staticmethod
-    async def create_tokens(user_id: int):
-        access = create_access_token(user_id)
-        refresh = create_refresh_token(user_id)
-        print('Auth create tokens')
-        await store_refresh_token_in_redis(user_id, refresh)
-        return access, refresh
