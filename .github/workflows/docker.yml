@@ -80,6 +80,7 @@ jobs:
     - name: Run Summarization Service Tests
       run: |
         pip install -r ./summarization-service/requirements.txt
+        export PYTHONPATH=$GITHUB_WORKSPACE/summarization-service
         python -m pytest ./summarization-service/app/tests/ -v -s
 
 
