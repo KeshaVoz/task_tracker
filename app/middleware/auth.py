@@ -55,7 +55,7 @@ class SilentRefreshMiddleware(BaseHTTPMiddleware):
                 key="access_token",
                 value=new_access_token,
                 httponly=True,
-                secure=True,
+                secure=False,
                 max_age=settings.ACCESS_TOKEN_TTL_MIN * 60,
                 samesite="lax"
             )

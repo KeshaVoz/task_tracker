@@ -76,7 +76,7 @@ class TokenService:
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=True,
+            secure=False,
             max_age=settings.ACCESS_TOKEN_TTL_MIN * 60,
             samesite="lax"
         )
@@ -84,7 +84,7 @@ class TokenService:
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=True,
+            secure=False,
             max_age=settings.REFRESH_TOKEN_TTL_DAYS * 24 * 3600,
             samesite="lax"
         )        
@@ -98,7 +98,7 @@ class TokenService:
             key="access_token",
             value=new_access_token,
             httponly=True,
-            secure=True,
+            secure=False,
             max_age=settings.ACCESS_TOKEN_TTL_MIN * 60,
             samesite="lax"
         )
