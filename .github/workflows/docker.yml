@@ -68,4 +68,3 @@ jobs:
           ${{ secrets.DOCKERHUB_USERNAME }}/task-tracker-frontend:${{ steps.vars.outputs.sha_short }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-
