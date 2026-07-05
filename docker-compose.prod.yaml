@@ -113,6 +113,8 @@ services:
     image: keshavoznesensky/task-tracker-frontend:${IMAGE_TAG:-latest}
     ports:
       - "80:80"
+    environment:
+      - API_URL=${FRONTEND_API_URL:-http://localhost:8080/api}
     depends_on:
       api:
         condition: service_healthy
