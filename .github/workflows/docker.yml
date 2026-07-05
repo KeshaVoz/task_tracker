@@ -31,6 +31,25 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip' 
+
+
+    - name: Run Backend Tests
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        python -m pytest app/tests/ -v -s
+
+
+    - name: Run Summarization Service Tests
+      run: |
+        pip install -r ./summarization-service/requirements.txt
+        python -m pytest ./summarization-service/app/tests/ -v -s
+
     - name: Build and push backend
       uses: docker/build-push-action@v6
       with:
