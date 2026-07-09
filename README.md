@@ -17,7 +17,7 @@ cp .env.example .env
 Run the local development stack:
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.local.yaml up -d
 ```
 
 ### 3. Open the app
@@ -31,10 +31,10 @@ To run the automated test suite inside the Docker containers, use the following 
 
 ```bash
 # Main Backend API tests
-docker compose exec api python -m pytest app/tests/ -v -s
+docker compose -f docker-compose.local.yaml exec api python -m pytest app/tests/ -v -s
 
 # Summarization Microservice tests
-docker compose exec summarization-service python -m pytest app/tests/ -v -s
+docker compose -f docker-compose.local.yaml exec summarization-service python -m pytest app/tests/ -v -s
 ```
 
 **Stack**: FastAPI · PostgreSQL · Redis · RabbitMQ · Celery · Apache Kafka · Nginx · GigaChat LLM · Pytest · GitHub Actions · Docker
